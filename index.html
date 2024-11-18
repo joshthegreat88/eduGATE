@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE Study App</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header Styling */
+        .header {
+            background-color: #4A90E2;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+        }
+
+        .tagline {
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: 120px;
+            left: 0;
+            width: 200px;
+            background-color: #3b5998;
+            height: 100%;
+            padding-top: 20px;
+            color: white;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .sidebar a:hover {
+            background-color: #4A90E2;
+        }
+
+        /* Main Content Section */
+        main {
+            margin-left: 220px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .section {
+            display: none;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .section:not(.hidden) {
+            display: block;
+        }
+
+        /* Chatbot */
+        #chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        #chatbot-button {
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #chatbot-window {
+            display: none;
+            flex-direction: column;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 400px;
+            width: 300px;
+        }
+
+        #chatbot-messages {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        #chatbot-input {
+            padding: 10px;
+            width: calc(100% - 20px);
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        /* Footer Styling */
+        .footer {
+            background-color: #3b5998;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <img src="logo.png" alt="App Logo" class="logo">
+        <h1>Welcome to Your Personalized GATE Study Portal</h1>
+        <p class="tagline">Your Journey to Success Begins Here</p>
+    </header>
+
+    <!-- Sidebar Navigation Menu -->
+    <aside class="sidebar">
+        <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+        <a href="#" onclick="showSection('flashcards')">Flashcards</a>
+        <a href="#" onclick="showSection('quizzes')">Quizzes</a>
+        <a href="#" onclick="showSection('schedule')">Scheduled Tests</a>
+        <a href="#" onclick="showSection('progress')">Your Progress</a>
+        <a href="#" onclick="showSection('faq')">FAQs</a>
+        <a href="#" onclick="showSection('resources')">Resources</a>
+    </aside>
+
+    <!-- Main Content Sections -->
+    <main>
+        <section id="dashboard" class="section">Welcome back! Here is your progress overview...</section>
+        <section id="flashcards" class="section hidden">
+            <h2>Flashcards</h2>
+            <div id="flashcard-container"></div>
+        </section>
+        <section id="quizzes" class="section hidden">Take quizzes to assess your knowledge.</section>
+        <section id="schedule" class="section hidden">Plan and schedule your tests to stay on track.</section>
+        <section id="progress" class="section hidden">Track your study progress and achievements.</section>
+        <section id="faq" class="section hidden">Frequently Asked Questions</section>
+        <section id="resources" class="section hidden">Access a range of online resources.</section>
+    </main>
+
+    <!-- Chatbot Button and Window -->
+    <div id="chatbot-container">
+        <button id="chatbot-button" onclick="toggleChatbot()">💬 Study Assistant</button>
+        <div id="chatbot-window" class="hidden">
+            <div id="chatbot-messages"></div>
+            <input type="text" id="chatbot-input" placeholder="Ask me anything about GATE..." onkeydown="if(event.key === 'Enter') sendMessage()">
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <p>&copy; 2025 GATE Study App | Empowering Your Learning Journey</p>
+        <a href="#" style="color: white;">Contact Us</a> | <a href="#" style="color: white;">Privacy Policy</a>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Show selected section
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+
+            if (id === 'flashcards') {
+                fetchFlashcards();
+            }
+        }
+
+        // Fetch flashcards from the backend
+        async function fetchFlashcards() {
+            const response = await fetch('/flashcards');
+            const flashcards = await response.json();
+            const flashcardContainer = document.getElementById('flashcard-container');
+
+            // Clear existing flashcards
+            flashcardContainer.innerHTML = '';
+
+            // Populate with fetched flashcards
+            flashcards.forEach(card => {
+                const flashcard = document.createElement('div');
+                flashcard.innerText = card.question; // Adjust this as needed
+                flashcardContainer.appendChild(flashcard);
+            });
+        }
+
+        // Toggle chatbot visibility
+        function toggleChatbot() {
+            document.getElementById('chatbot-window').classList.toggle('hidden');
+        }
+
+        // Send and receive chatbot messages
+        async function sendMessage() {
+            const input = document.getElementById('chatbot-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Display user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'user-message';
+            userMessage.innerText = message;
+            document.getElementById('chatbot-messages').appendChild(userMessage);
+
+            // Send user message to backend
+            const response = await fetch('/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question: message }),
+            });
+
+            const data = await response.json();
+
+            // Display bot response
+            const botMessage = document.createElement('div');
+            botMessage.className = 'bot-message';
+            botMessage.innerText = data.answer;
+            document.getElementById('chatbot-messages').appendChild(botMessage);
+
+            input.value = ""; // Clear input
+        }
+    </script>
+</body>
+</html>
